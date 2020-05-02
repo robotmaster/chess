@@ -329,11 +329,11 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y):
         piece.x=nextpoint_x
         piece.y=nextpoint_y
         return True
-    # elif Castle(board,piece):
-    #     if nextpoint_x==2:
-    #         if nextpoint_y==7:
-    #             king.x=nextpoint_x
-    #             king.y=nextpoint_y
+    elif Castle(board,piece):
+        if nextpoint_x==2:
+            if nextpoint_y==7:
+                king.x=nextpoint_x
+                king.y=nextpoint_y
     else:
         return False
 

@@ -73,61 +73,61 @@ board=Board(8,8)
 
 b_king=Piece(1,1,'b_king_chess.jpg',4,0,'king','b','u')
 board.addpiece(b_king)
-#
-# queen=Piece(1,1,'queen_chess.jpg',3,7,'queen','w','u')
-# board.addpiece(queen)
-#
-# b_queen=Piece(1,1,'b_queen_chess.jpg',3,0,'queen','b','u')
-# board.addpiece(b_queen)
-#
+
+queen=Piece(1,1,'queen_chess.jpg',3,7,'queen','w','u')
+board.addpiece(queen)
+
+b_queen=Piece(1,1,'b_queen_chess.jpg',3,0,'queen','b','u')
+board.addpiece(b_queen)
+
 king=Piece(1,1,'king_chess.jpg',4,7,'king','w','u')
 board.addpiece(king)
-#
-# b_bishop1=Piece(1,1,'b_bishop_chess.jpg',2,0,'bishop','b','u')
-# board.addpiece(b_bishop1)
-#
-# b_bishop2=Piece(1,1,'b_bishop_chess.jpg',5,0,'bishop','b','u')
-# board.addpiece(b_bishop2)
-#
-# bishop1=Piece(1,1,'bishop_chess.jpg',5,7,'bishop','w','u')
-# board.addpiece(bishop1)
-#
-# bishop2=Piece(1,1,'bishop_chess.jpg',2,7,'bishop','w','u')
-# board.addpiece(bishop2)
-#
-# ma1=Piece(1,1,'ma_chess.jpg',1,7,'ma','w','u')
-# board.addpiece(ma1)
-#
-# ma2=Piece(1,1,'ma_chess.jpg',6,7,'ma','w','u')
-# board.addpiece(ma2)
-#
+
+b_bishop1=Piece(1,1,'b_bishop_chess.jpg',2,0,'bishop','b','u')
+board.addpiece(b_bishop1)
+
+b_bishop2=Piece(1,1,'b_bishop_chess.jpg',5,0,'bishop','b','u')
+board.addpiece(b_bishop2)
+
+bishop1=Piece(1,1,'bishop_chess.jpg',5,7,'bishop','w','u')
+board.addpiece(bishop1)
+
+bishop2=Piece(1,1,'bishop_chess.jpg',2,7,'bishop','w','u')
+board.addpiece(bishop2)
+
+ma1=Piece(1,1,'ma_chess.jpg',1,7,'ma','w','u')
+board.addpiece(ma1)
+
+ma2=Piece(1,1,'ma_chess.jpg',6,7,'ma','w','u')
+board.addpiece(ma2)
+
 rook1=Piece(1,1,'rook_chess.jpg',0,7,'rook','w','u')
 board.addpiece(rook1)
 
 rook2=Piece(1,1,'rook_chess.jpg',7,7,'rook','w','u')
 board.addpiece(rook2)
-#
-# b_ma1=Piece(1,1,'b_ma_chess.jpg',1,0,'ma','b','u')
-# board.addpiece(b_ma1)
-#
-# b_ma2=Piece(1,1,'b_ma_chess.jpg',6,0,'ma','b','u')
-# board.addpiece(b_ma2)
-#
+
+b_ma1=Piece(1,1,'b_ma_chess.jpg',1,0,'ma','b','u')
+board.addpiece(b_ma1)
+
+b_ma2=Piece(1,1,'b_ma_chess.jpg',6,0,'ma','b','u')
+board.addpiece(b_ma2)
+
 b_rook1=Piece(1,1,'b_rook_chess.jpg',0,0,'rook','b','u')
 board.addpiece(b_rook1)
 
 b_rook2=Piece(1,1,'b_rook_chess.jpg',7,0,'rook','b','u')
 board.addpiece(b_rook2)
 
-# b_pawn=[]
-# for i in range(8):
-#     b_pawn.append(Piece(1,1,'b_pawn_chess.jpg',i,1,'b_pawn','b','u'))
-#     board.addpiece(b_pawn[i])
-#
-# pawn=[]
-# for i in range(8):
-#     pawn.append(Piece(1,1,'pawn_chess.jpg',i,6,'pawn','w','u'))
-#     board.addpiece(pawn[i])
+b_pawn=[]
+for i in range(8):
+    b_pawn.append(Piece(1,1,'b_pawn_chess.jpg',i,1,'b_pawn','b','u'))
+    board.addpiece(b_pawn[i])
+
+pawn=[]
+for i in range(8):
+    pawn.append(Piece(1,1,'pawn_chess.jpg',i,6,'pawn','w','u'))
+    board.addpiece(pawn[i])
 
 
 def isValid(piece,board,nextpoint_x,nextpoint_y):
@@ -306,16 +306,28 @@ def isValidCastle(board,nextpoint_x,piece):
         if nextpoint_x==2:
             if rook1.moved=='m':
                 return False
+            for p in range(2,5):
+                if board.m_available[7,p]>0:
+                    return False
         if nextpoint_x==6:
             if rook2.moved=='m':
                 return False
+            for p in range(5,6):
+                if board.m_available[7,p]>0:
+                    return False
     if board.turn=='b':
         if nextpoint_x==2:
             if b_rook1.moved=='m':
                 return False
+            for p in range(2,4):
+                if board.m_available[0,p]>0:
+                    return False
         if nextpoint_x==6:
             if b_rook2.moved=='m':
                 return False
+            for p in range(5,6):
+                if board.m_available[0,p]>0:
+                    return False
     if abs(nextpoint_x-piece.x)==2:
         return True
     else:
@@ -338,7 +350,7 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y):
         board.m_available[piece.y,piece.x]=0
         piece.x=nextpoint_x
         piece.y=nextpoint_y
-        piece.moved = 'm'
+        piece.moved='m'
         if isCastleMove: #if castle move,need to move rook
             if piece.x==2:
                 if piece.color=='w':

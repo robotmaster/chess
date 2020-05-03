@@ -304,17 +304,30 @@ def isValidCastle(board,nextpoint_x,piece):
         return False
     if board.turn=='w':
         if nextpoint_x==2:
+            #check if rook has already moved
             if rook1.moved=='m':
                 return False
-            for p in range(2,5):
+            #check if there's any piece between the king and the rook
+            for p in range(2,4):
                 if board.m_available[7,p]>0:
                     return False
+            #check if there's a check on any position between king and it's castled postion
+            for x_position in (2,4):
+                for p in board.pieces:
+                    if p.color=='b':
+                        if isValid(p,board,x_position,7):
+                            return False
         if nextpoint_x==6:
             if rook2.moved=='m':
                 return False
             for p in range(5,6):
                 if board.m_available[7,p]>0:
                     return False
+            for x_position in (4,6):
+                for p in board.pieces:
+                    if p.color=='b':
+                        if isValid(p,board,x_position,7):
+                            return False
     if board.turn=='b':
         if nextpoint_x==2:
             if b_rook1.moved=='m':
@@ -322,12 +335,22 @@ def isValidCastle(board,nextpoint_x,piece):
             for p in range(2,4):
                 if board.m_available[0,p]>0:
                     return False
+            for x_position in (2,4):
+                for p in board.pieces:
+                    if p.color=='w':
+                        if isValid(p,board,x_position,0):
+                            return False
         if nextpoint_x==6:
             if b_rook2.moved=='m':
                 return False
             for p in range(5,6):
                 if board.m_available[0,p]>0:
                     return False
+            for x_position in (4,6):
+                for p in board.pieces:
+                    if p.color=='w':
+                        if isValid(p,board,x_position,0):
+                            return False
     if abs(nextpoint_x-piece.x)==2:
         return True
     else:

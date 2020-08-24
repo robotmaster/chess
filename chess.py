@@ -2,7 +2,6 @@
 import cv2
 import numpy as np
 
-
 class Board:
     def __init__(self,height,width):
         self.height=height
@@ -40,7 +39,7 @@ class Board:
                 background[bottom_right_y-10:bottom_right_y,top_left_x+10:bottom_right_x-10,:]=[0,211,255]
         cv2.imshow(fig,background)
 
-    def addpiece(self,piece):  
+    def addpiece(self,piece):
         self.pieces.append(piece)
         n_piece=len(np.unique(self.m_available))
         self.mapping[n_piece]=piece
@@ -129,8 +128,20 @@ for i in range(8):
     pawn.append(Piece(1,1,'pawn_chess.jpg',i,6,'pawn','w','u'))
     board.addpiece(pawn[i])
 
+def IsCheck (board,color):
+    if color=='b':
+        for p in board.pieces:
+            if p.color == 'w':
+                if isValid(p,board,b_king.x,b_king.y,False):
+                    return True
 
-def isValid(piece,board,nextpoint_x,nextpoint_y):
+    if color=='w':
+        for p in board.pieces:
+            if p.color == 'b':
+                if isValid(p,board,king.x,king.y,False):
+                    return True
+    return False
+def isValid(piece,board,nextpoint_x,nextpoint_y,needcheck=True):
     if piece.x==nextpoint_x and piece.y==nextpoint_y:
         return False
     if board.m_available[nextpoint_y,nextpoint_x]>0:
@@ -144,7 +155,7 @@ def isValid(piece,board,nextpoint_x,nextpoint_y):
             for p in range(nextpoint_y+1,piece.y):
                 if board.m_available[p,piece.x]>0:
                     return False
-            return True
+
         elif nextpoint_y==piece.y:
             for p in range(piece.x+1,nextpoint_x):
                 if board.m_available[piece.y,p]>0:
@@ -152,7 +163,8 @@ def isValid(piece,board,nextpoint_x,nextpoint_y):
             for p in range(nextpoint_x+1,piece.x):
                 if board.m_available[piece.y,p]>0:
                     return False
-            return True
+        else:
+            return False
     if piece.pt=='queen':
         if nextpoint_x==piece.x:
             for p in range(piece.y+1,nextpoint_y):
@@ -161,7 +173,7 @@ def isValid(piece,board,nextpoint_x,nextpoint_y):
             for p in range(nextpoint_y+1,piece.y):
                 if board.m_available[p,piece.x]>0:
                     return False
-            return True
+
         elif nextpoint_y==piece.y:
             for p in range(piece.x+1,nextpoint_x):
                 if board.m_available[piece.y,p]>0:
@@ -169,7 +181,7 @@ def isValid(piece,board,nextpoint_x,nextpoint_y):
             for p in range(nextpoint_x+1,piece.x):
                 if board.m_available[piece.y,p]>0:
                     return False
-            return True
+
         elif abs(piece.x-nextpoint_x)-abs(piece.y-nextpoint_y)==0:
             if nextpoint_x-piece.x==nextpoint_y-piece.y:
                 for p in range(piece.x+1,nextpoint_x):
@@ -178,27 +190,28 @@ def isValid(piece,board,nextpoint_x,nextpoint_y):
                 for p in range(nextpoint_x+1,piece.x):
                     if board.m_available[nextpoint_y+(p-nextpoint_x),p]>0:
                         return False
-            if nextpoint_x-piece.x==piece.y-nextpoint_y:
+            elif nextpoint_x-piece.x==piece.y-nextpoint_y:
                 for p in range(piece.x+1,nextpoint_x):
                     if board.m_available[piece.y+(piece.x-p),p]>0:
                         return False
                 for p in range(nextpoint_x+1,piece.x):
                     if board.m_available[nextpoint_y+(nextpoint_x-p),p]>0:
                         return False
-            return True
+            else:
+                return False
         #dont forget to add capturing
         else:
             return False
     if piece.pt=='king':
         if nextpoint_x==piece.x:
-            if abs(piece.y-nextpoint_y)<2:
-                return True
+            if abs(piece.y-nextpoint_y)>=2:
+                return False
         elif nextpoint_y==piece.y:
-            if abs(piece.x-nextpoint_x)<2:
-                return True
+            if abs(piece.x-nextpoint_x)>=2:
+                return False
         elif abs(piece.x-nextpoint_x)-abs(piece.y-nextpoint_y)==0:
-            if abs(piece.y-nextpoint_y)<2 and abs(piece.x-nextpoint_x)<2:
-                return True
+            if abs(piece.y-nextpoint_y)>=2 or abs(piece.x-nextpoint_x)>=2:
+                return False
         #dont forget to add capturing
         else:
             return False
@@ -209,32 +222,28 @@ def isValid(piece,board,nextpoint_x,nextpoint_y):
                     return False
                 if piece.y==6:
                     if piece.y-nextpoint_y<3:
-                        for p in range(nextpoint_y,piece.y):
+                        for p in range(piece.y,nextpoint_y):
                             if board.m_available[p,piece.x]>0:
                                 return False
-                        return True
-                if piece.y<6:
+                    else:
+                        return False
+                else:
                     if piece.y-nextpoint_y<2:
-                        for p in range(nextpoint_y,piece.y):
+                        for p in range(piece.y,nextpoint_y):
                             if board.m_available[p,piece.x]>0:
                                 return False
-                        return True
-                else:
-                    return False
+                    else:
+                        return False
+            else:
+                return False
         elif board.m_available[nextpoint_y,nextpoint_x]>0:
-            if nextpoint_x-piece.x==nextpoint_y-piece.y:
-                if nextpoint_x-piece.x>0:
-                    return False
-                else:
-                    return True
-            if nextpoint_x-piece.x==piece.y-nextpoint_y:
-                if nextpoint_x-piece.x<0:
-                    return False
-                else:
-                    return True
-                    
-        #dont foget to add capturing
-                
+            if nextpoint_y-piece.y!=-1 or abs(nextpoint_x-piece.x)!=1:
+                return False
+
+            else:
+                return False
+        #dont forget to add capturing
+
         else:
             return False
     if piece.pt=='b_pawn':
@@ -247,25 +256,25 @@ def isValid(piece,board,nextpoint_x,nextpoint_y):
                         for p in range(nextpoint_y,piece.y):
                             if board.m_available[p,piece.x]>0:
                                 return False
-                        return True
+                    else:
+                        return False
                 if piece.y>1:
                     if nextpoint_y-piece.y<2:
                         for p in range(nextpoint_y,piece.y):
                             if board.m_available[p,piece.x]>0:
                                 return False
-                        return True
+                    else:
+                        return False
+            else:
+                return False
+
         elif board.m_available[nextpoint_y,nextpoint_x]>0:
-            if nextpoint_x-piece.x==nextpoint_y-piece.y:
-                if nextpoint_x-piece.x<0:
-                    return False
-                else:
-                    return True
-            if nextpoint_x-piece.x==piece.y-nextpoint_y:
-                if nextpoint_x-piece.x>0:
-                    return False
-                else:
-                    return True
-    
+            if nextpoint_y-piece.y!=1 or abs(nextpoint_x-piece.x)!=1:
+                return False
+
+        else:
+            return False
+
     if piece.pt=='bishop':
         if abs(piece.x-nextpoint_x)-abs(piece.y-nextpoint_y)==0:
             if nextpoint_x-piece.x==nextpoint_y-piece.y:
@@ -275,27 +284,54 @@ def isValid(piece,board,nextpoint_x,nextpoint_y):
                 for p in range(nextpoint_x+1,piece.x):
                     if board.m_available[nextpoint_y+(p-nextpoint_x),p]>0:
                         return False
-            if nextpoint_x-piece.x==piece.y-nextpoint_y:
+            elif nextpoint_x-piece.x==piece.y-nextpoint_y:
                 for p in range(piece.x+1,nextpoint_x):
                     if board.m_available[piece.y+(piece.x-p),p]>0:
                         return False
                 for p in range(nextpoint_x+1,piece.x):
                     if board.m_available[nextpoint_y+(nextpoint_x-p),p]>0:
                         return False
-                    
-            return True
+
+            else:
+                return False
         #dont forget to add capturing
         else:
             return False
     if piece.pt=='ma':
         if abs(piece.x-nextpoint_x)==1:
-            if abs(piece.y-nextpoint_y)==2:
-                return True
+            if abs(piece.y-nextpoint_y)!=2:
+                return False
         elif abs(piece.x-nextpoint_x)==2:
-            if abs(piece.y-nextpoint_y)==1:
-                return True
+            if abs(piece.y-nextpoint_y)!=1:
+                return False
         else:
             return False
+    ##hypothetically move
+    if needcheck:
+        if board.m_available[nextpoint_y, nextpoint_x]>0:
+            nextpiece=board.mapping[board.m_available[nextpoint_y, nextpoint_x]]
+        cur_x=piece.x
+        cur_y=piece.y
+        capturedPiece = Capturing(piece,board,nextpoint_x,nextpoint_y)
+        board.m_available[nextpoint_y, nextpoint_x] = board.m_available[piece.y, piece.x]
+        board.m_available[piece.y, piece.x] = 0
+        piece.x = nextpoint_x
+        piece.y = nextpoint_y
+        checkResult= IsCheck(board, piece.color)
+        ##do some clean up before returning
+        board.m_available[cur_y, cur_x] = board.m_available[nextpoint_y, nextpoint_x]
+        if capturedPiece is not None:
+            board.pieces.append(board.mapping[capturedPiece])
+            board.m_available[nextpoint_y, nextpoint_x]=capturedPiece
+        else:
+            board.m_available[nextpoint_y, nextpoint_x]=0
+
+        piece.x=cur_x
+        piece.y=cur_y
+        return not checkResult
+    else:
+        return True
+
 
 def isValidCastle(board,nextpoint_x,piece):
     if piece.pt!='king':
@@ -312,7 +348,7 @@ def isValidCastle(board,nextpoint_x,piece):
                 if board.m_available[7,p]>0:
                     return False
             #check if there's a check on any position between king and it's castled postion
-            for x_position in (2,4):
+            for x_position in range(2,5):
                 for p in board.pieces:
                     if p.color=='b':
                         if isValid(p,board,x_position,7):
@@ -320,10 +356,10 @@ def isValidCastle(board,nextpoint_x,piece):
         if nextpoint_x==6:
             if rook2.moved=='m':
                 return False
-            for p in range(5,6):
+            for p in range(5,7):
                 if board.m_available[7,p]>0:
                     return False
-            for x_position in (4,6):
+            for x_position in range(4,7):
                 for p in board.pieces:
                     if p.color=='b':
                         if isValid(p,board,x_position,7):
@@ -355,12 +391,16 @@ def isValidCastle(board,nextpoint_x,piece):
         return True
     else:
         return False
+
 global isCastleMove
 
 def Capturing(piece,board,nextpoint_x,nextpoint_y):
     if board.m_available[nextpoint_y,nextpoint_x]>0:
         if board.mapping[board.m_available[nextpoint_y,nextpoint_x]].color!=piece.color:
-            board.pieces.remove(board.mapping[board.m_available[nextpoint_y,nextpoint_x]])
+            nextpiece=board.m_available[nextpoint_y,nextpoint_x]
+            board.pieces.remove(board.mapping[nextpiece])
+            return nextpiece
+    return None
 
 def movepiece(board,piece,nextpoint_x,nextpoint_y):
     global isCastleMove
@@ -368,7 +408,7 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y):
     if isValidCastle(board,nextpoint_x,piece):
         isCastleMove=True
     if isValid(piece,board,nextpoint_x,nextpoint_y) or isValidCastle(board,nextpoint_x,piece):
-        Capturing(piece,board,nextpoint_x,nextpoint_y)
+        Capturing(piece, board, nextpoint_x, nextpoint_y)
         board.m_available[nextpoint_y,nextpoint_x]=board.m_available[piece.y,piece.x]
         board.m_available[piece.y,piece.x]=0
         piece.x=nextpoint_x
@@ -432,6 +472,7 @@ def onmouse(event,x,y,flags,params):
         if board.currentpiece is not None and movepiece(board,board.currentpiece,p_x,p_y):
 
             if board.turn=='w':
+
                 board.turn='b'
             else:
                 board.turn='w'
@@ -449,10 +490,3 @@ while(1):
         print ('Done')
         cv2.destroyAllWindows()
         break
-
-
-
-
-
-
-

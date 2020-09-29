@@ -62,6 +62,7 @@ class Piece:
         self.color=color
         self.image=cv2.imread(self.picture)
         self.moved=moved
+        self.enpassant=False
     def draw(self):
         cv2.imshow('img',self.image)
         cv2.waitKey(0)
@@ -127,7 +128,6 @@ pawn=[]
 for i in range(8):
     pawn.append(Piece(1,1,'pawn_chess.jpg',i,6,'pawn','w','u'))
     board.addpiece(pawn[i])
-
 def IsCheck (board,color):
     if color=='b':
         for p in board.pieces:
@@ -141,11 +141,11 @@ def IsCheck (board,color):
                 if isValid(p,board,king.x,king.y,False):
                     return True
     return False
-def isValid(piece,board,nextpoint_x,nextpoint_y,needcheck=True):
+def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
     if piece.x==nextpoint_x and piece.y==nextpoint_y:
         return False
     if board.m_available[nextpoint_y,nextpoint_x]>0:
-        if board.mapping[board.m_available[nextpoint_y,nextpoint_x]].color==         piece.color:
+        if board.mapping[board.m_available[nextpoint_y,nextpoint_x]].color==piece.color:
             return False
     if piece.pt=='rook':
         if nextpoint_x==piece.x:
@@ -240,12 +240,17 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,needcheck=True):
             if nextpoint_y-piece.y!=-1 or abs(nextpoint_x-piece.x)!=1:
                 return False
 
+        elif board.m_available[nextpoint_y,nextpoint_x]==0:
+            if board.m_available[piece.y,nextpoint_x]>0:
+                apiece = board.m_available[piece.y,nextpoint_x]
+                if board.mapping[apiece].enpassant==False:
+                    return False
+                elif abs(nextpoint_x-piece.x)>1:
+                    return False
             else:
                 return False
         #dont forget to add capturing
 
-        else:
-            return False
     if piece.pt=='b_pawn':
         if piece.x==nextpoint_x:
             if piece.y-nextpoint_y<0:
@@ -271,9 +276,15 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,needcheck=True):
         elif board.m_available[nextpoint_y,nextpoint_x]>0:
             if nextpoint_y-piece.y!=1 or abs(nextpoint_x-piece.x)!=1:
                 return False
-
-        else:
-            return False
+        elif board.m_available[nextpoint_y,nextpoint_x]==0:
+            if board.m_available[piece.y,nextpoint_x]>0:
+                bpiece = board.m_available[piece.y,nextpoint_x]
+                if board.mapping[bpiece].enpassant==False:
+                    return False
+                elif abs(nextpoint_x-piece.x)>1:
+                    return False
+            else:
+                return False
 
     if piece.pt=='bishop':
         if abs(piece.x-nextpoint_x)-abs(piece.y-nextpoint_y)==0:
@@ -312,7 +323,7 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,needcheck=True):
             nextpiece=board.mapping[board.m_available[nextpoint_y, nextpoint_x]]
         cur_x=piece.x
         cur_y=piece.y
-        capturedPiece = Capturing(piece,board,nextpoint_x,nextpoint_y)
+        capturedPiece = Capturing(piece,board,nextpoint_x,nextpoint_y,enpassant)
         board.m_available[nextpoint_y, nextpoint_x] = board.m_available[piece.y, piece.x]
         board.m_available[piece.y, piece.x] = 0
         piece.x = nextpoint_x
@@ -394,21 +405,37 @@ def isValidCastle(board,nextpoint_x,piece):
 
 global isCastleMove
 
-def Capturing(piece,board,nextpoint_x,nextpoint_y):
-    if board.m_available[nextpoint_y,nextpoint_x]>0:
-        if board.mapping[board.m_available[nextpoint_y,nextpoint_x]].color!=piece.color:
-            nextpiece=board.m_available[nextpoint_y,nextpoint_x]
-            board.pieces.remove(board.mapping[nextpiece])
-            return nextpiece
-    return None
+def Capturing(piece,board,nextpoint_x,nextpoint_y,enpassantmove):
+    if enpassantmove==False:
+        if board.m_available[nextpoint_y,nextpoint_x]>0:
+            if board.mapping[board.m_available[nextpoint_y,nextpoint_x]].color!=piece.color:
+                nextpiece=board.m_available[nextpoint_y,nextpoint_x]
+                board.pieces.remove(board.mapping[nextpiece])
+                return nextpiece
+        return None
+    else:
+        if board.m_available[piece.y,nextpoint_x]>0:
+            if board.mapping[board.m_available[piece.y,nextpoint_x]].color!=piece.color:
+                nextpiece=board.m_available[piece.y,nextpoint_x]
+                board.pieces.remove(board.mapping[nextpiece])
 
-def movepiece(board,piece,nextpoint_x,nextpoint_y):
+
+def movepiece(board,piece,nextpoint_x,nextpoint_y,):
     global isCastleMove
     isCastleMove=False
     if isValidCastle(board,nextpoint_x,piece):
         isCastleMove=True
-    if isValid(piece,board,nextpoint_x,nextpoint_y) or isValidCastle(board,nextpoint_x,piece):
-        Capturing(piece, board, nextpoint_x, nextpoint_y)
+    if isValid(piece,board,nextpoint_x,nextpoint_y,) or isValidCastle(board,nextpoint_x,piece):
+        enpassantmove=False
+        if piece.pt=='pawn':
+            if piece.y-nextpoint_y==2:
+                piece.enpassant=True
+        if piece.pt=='b_pawn':
+            if nextpoint_y-piece.y==2:
+                piece.enpassant=True
+        if piece.pt in ['pawn','b_pawn'] and board.m_available[nextpoint_y,nextpoint_x]==0:
+            enpassantmove=True
+        Capturing(piece,board,nextpoint_x,nextpoint_y,enpassantmove)
         board.m_available[nextpoint_y,nextpoint_x]=board.m_available[piece.y,piece.x]
         board.m_available[piece.y,piece.x]=0
         piece.x=nextpoint_x
@@ -443,13 +470,15 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y):
                     b_rook2.x=5
                     b_rook2.y=0
                     b_rook2.moved='m'
+
+
         return True
 
     else:
         return False
 
 global p_x,p_y
-def onmouse(event,x,y,flags,params):
+def onmouse(event,x,y,flags,params,):
     global isCastleMove
     if event==cv2.EVENT_LBUTTONDOWN:
         global p_x,p_y
@@ -472,9 +501,12 @@ def onmouse(event,x,y,flags,params):
         if board.currentpiece is not None and movepiece(board,board.currentpiece,p_x,p_y):
 
             if board.turn=='w':
-
+                for i in range(8):
+                    b_pawn[i].enpassant=False
                 board.turn='b'
             else:
+                for i in range(8):
+                    pawn[i].enpassant=False
                 board.turn='w'
 
             board.currentpiece=None

@@ -1,6 +1,7 @@
 
 import cv2
 import numpy as np
+from inputbox import getInput
 
 class Board:
     def __init__(self,height,width):
@@ -41,9 +42,9 @@ class Board:
 
     def addpiece(self,piece):
         self.pieces.append(piece)
-        n_piece=len(np.unique(self.m_available))
-        self.mapping[n_piece]=piece
-        self.m_available[piece.y: piece.y+piece.height,piece.x: piece.x+piece.width]=n_piece
+        n_piece=np.max(self.m_available)
+        self.mapping[n_piece+1]=piece
+        self.m_available[piece.y: piece.y+piece.height,piece.x: piece.x+piece.width]=n_piece+1
         piece.number=n_piece
     def Place(self,x,y):
         X=int(x / self.scale)
@@ -83,42 +84,42 @@ board.addpiece(b_queen)
 king=Piece(1,1,'king_chess.jpg',4,7,'king','w','u')
 board.addpiece(king)
 
-b_bishop1=Piece(1,1,'b_bishop_chess.jpg',2,0,'bishop','b','u')
-board.addpiece(b_bishop1)
-
-b_bishop2=Piece(1,1,'b_bishop_chess.jpg',5,0,'bishop','b','u')
-board.addpiece(b_bishop2)
-
-bishop1=Piece(1,1,'bishop_chess.jpg',5,7,'bishop','w','u')
-board.addpiece(bishop1)
-
-bishop2=Piece(1,1,'bishop_chess.jpg',2,7,'bishop','w','u')
-board.addpiece(bishop2)
-
-ma1=Piece(1,1,'ma_chess.jpg',1,7,'ma','w','u')
-board.addpiece(ma1)
-
-ma2=Piece(1,1,'ma_chess.jpg',6,7,'ma','w','u')
-board.addpiece(ma2)
-
-rook1=Piece(1,1,'rook_chess.jpg',0,7,'rook','w','u')
-board.addpiece(rook1)
-
-rook2=Piece(1,1,'rook_chess.jpg',7,7,'rook','w','u')
-board.addpiece(rook2)
-
-b_ma1=Piece(1,1,'b_ma_chess.jpg',1,0,'ma','b','u')
-board.addpiece(b_ma1)
-
-b_ma2=Piece(1,1,'b_ma_chess.jpg',6,0,'ma','b','u')
-board.addpiece(b_ma2)
-
-b_rook1=Piece(1,1,'b_rook_chess.jpg',0,0,'rook','b','u')
-board.addpiece(b_rook1)
-
-b_rook2=Piece(1,1,'b_rook_chess.jpg',7,0,'rook','b','u')
-board.addpiece(b_rook2)
-
+# b_bishop1=Piece(1,1,'b_bishop_chess.jpg',2,0,'bishop','b','u')
+# board.addpiece(b_bishop1)
+#
+# b_bishop2=Piece(1,1,'b_bishop_chess.jpg',5,0,'bishop','b','u')
+# board.addpiece(b_bishop2)
+#
+# bishop1=Piece(1,1,'bishop_chess.jpg',5,7,'bishop','w','u')
+# board.addpiece(bishop1)
+#
+# bishop2=Piece(1,1,'bishop_chess.jpg',2,7,'bishop','w','u')
+# board.addpiece(bishop2)
+#
+# ma1=Piece(1,1,'ma_chess.jpg',1,7,'ma','w','u')
+# board.addpiece(ma1)
+#
+# ma2=Piece(1,1,'ma_chess.jpg',6,7,'ma','w','u')
+# board.addpiece(ma2)
+#
+# rook1=Piece(1,1,'rook_chess.jpg',0,7,'rook','w','u')
+# board.addpiece(rook1)
+#
+# rook2=Piece(1,1,'rook_chess.jpg',7,7,'rook','w','u')
+# board.addpiece(rook2)
+#
+# b_ma1=Piece(1,1,'b_ma_chess.jpg',1,0,'ma','b','u')
+# board.addpiece(b_ma1)
+#
+# b_ma2=Piece(1,1,'b_ma_chess.jpg',6,0,'ma','b','u')
+# board.addpiece(b_ma2)
+#
+# b_rook1=Piece(1,1,'b_rook_chess.jpg',0,0,'rook','b','u')
+# board.addpiece(b_rook1)
+#
+# b_rook2=Piece(1,1,'b_rook_chess.jpg',7,0,'rook','b','u')
+# board.addpiece(b_rook2)
+#
 b_pawn=[]
 for i in range(8):
     b_pawn.append(Piece(1,1,'b_pawn_chess.jpg',i,1,'b_pawn','b','u'))
@@ -470,6 +471,13 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
                     b_rook2.x=5
                     b_rook2.y=0
                     b_rook2.moved='m'
+
+        if piece.pt=='pawn' and piece.y==0: ##white pawn reaches to the promotion position
+            newpiece=getInput()
+            board.pieces.remove(board.mapping[board.m_available[piece.y, piece.x]])##remove promoted pawn
+            if newpiece=='queen':
+                board.addpiece(Piece(1, 1, 'queen_chess.jpg',piece.x,piece.y,'queen','w','u'))
+
 
 
         return True

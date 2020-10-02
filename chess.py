@@ -2,6 +2,7 @@
 import cv2
 import numpy as np
 from inputbox import getInput
+## does not work on mac os 10 or later without tkinter/tk/tcl 8.6.5
 
 class Board:
     def __init__(self,height,width):
@@ -84,42 +85,42 @@ board.addpiece(b_queen)
 king=Piece(1,1,'king_chess.jpg',4,7,'king','w','u')
 board.addpiece(king)
 
-# b_bishop1=Piece(1,1,'b_bishop_chess.jpg',2,0,'bishop','b','u')
-# board.addpiece(b_bishop1)
-#
-# b_bishop2=Piece(1,1,'b_bishop_chess.jpg',5,0,'bishop','b','u')
-# board.addpiece(b_bishop2)
-#
-# bishop1=Piece(1,1,'bishop_chess.jpg',5,7,'bishop','w','u')
-# board.addpiece(bishop1)
-#
-# bishop2=Piece(1,1,'bishop_chess.jpg',2,7,'bishop','w','u')
-# board.addpiece(bishop2)
-#
-# ma1=Piece(1,1,'ma_chess.jpg',1,7,'ma','w','u')
-# board.addpiece(ma1)
-#
-# ma2=Piece(1,1,'ma_chess.jpg',6,7,'ma','w','u')
-# board.addpiece(ma2)
-#
-# rook1=Piece(1,1,'rook_chess.jpg',0,7,'rook','w','u')
-# board.addpiece(rook1)
-#
-# rook2=Piece(1,1,'rook_chess.jpg',7,7,'rook','w','u')
-# board.addpiece(rook2)
-#
-# b_ma1=Piece(1,1,'b_ma_chess.jpg',1,0,'ma','b','u')
-# board.addpiece(b_ma1)
-#
-# b_ma2=Piece(1,1,'b_ma_chess.jpg',6,0,'ma','b','u')
-# board.addpiece(b_ma2)
-#
-# b_rook1=Piece(1,1,'b_rook_chess.jpg',0,0,'rook','b','u')
-# board.addpiece(b_rook1)
-#
-# b_rook2=Piece(1,1,'b_rook_chess.jpg',7,0,'rook','b','u')
-# board.addpiece(b_rook2)
-#
+b_bishop1=Piece(1,1,'b_bishop_chess.jpg',2,0,'bishop','b','u')
+board.addpiece(b_bishop1)
+
+b_bishop2=Piece(1,1,'b_bishop_chess.jpg',5,0,'bishop','b','u')
+board.addpiece(b_bishop2)
+
+bishop1=Piece(1,1,'bishop_chess.jpg',5,7,'bishop','w','u')
+board.addpiece(bishop1)
+
+bishop2=Piece(1,1,'bishop_chess.jpg',2,7,'bishop','w','u')
+board.addpiece(bishop2)
+
+ma1=Piece(1,1,'ma_chess.jpg',1,7,'ma','w','u')
+board.addpiece(ma1)
+
+ma2=Piece(1,1,'ma_chess.jpg',6,7,'ma','w','u')
+board.addpiece(ma2)
+
+rook1=Piece(1,1,'rook_chess.jpg',0,7,'rook','w','u')
+board.addpiece(rook1)
+
+rook2=Piece(1,1,'rook_chess.jpg',7,7,'rook','w','u')
+board.addpiece(rook2)
+
+b_ma1=Piece(1,1,'b_ma_chess.jpg',1,0,'ma','b','u')
+board.addpiece(b_ma1)
+
+b_ma2=Piece(1,1,'b_ma_chess.jpg',6,0,'ma','b','u')
+board.addpiece(b_ma2)
+
+b_rook1=Piece(1,1,'b_rook_chess.jpg',0,0,'rook','b','u')
+board.addpiece(b_rook1)
+
+b_rook2=Piece(1,1,'b_rook_chess.jpg',7,0,'rook','b','u')
+board.addpiece(b_rook2)
+
 b_pawn=[]
 for i in range(8):
     b_pawn.append(Piece(1,1,'b_pawn_chess.jpg',i,1,'b_pawn','b','u'))
@@ -476,7 +477,24 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
             newpiece=getInput()
             board.pieces.remove(board.mapping[board.m_available[piece.y, piece.x]])##remove promoted pawn
             if newpiece=='queen':
-                board.addpiece(Piece(1, 1, 'queen_chess.jpg',piece.x,piece.y,'queen','w','u'))
+                board.addpiece(Piece(1, 1, 'queen_chess.jpg',piece.x,piece.y,'queen','w','m'))
+            if newpiece=='rook':
+                board.addpiece(Piece(1, 1, 'rook_chess.jpg',piece.x,piece.y,'rook','w','m'))
+            if newpiece=='knight':
+                board.addpiece(Piece(1, 1, 'ma_chess.jpg',piece.x,piece.y,'ma','w','m'))
+            if newpiece=='bighop':
+                board.addpiece(Piece(1, 1,'bishop_chess.jpg',piece.x, piece.y,'bishop','w','m'))
+        if piece.pt=='b_pawn' and piece.y==7: ##black pawn reaches to the promotion position
+            newpiece=getInput()
+            board.pieces.remove(board.mapping[board.m_available[piece.y, piece.x]])##remove promoted pawn
+            if newpiece=='queen':
+                board.addpiece(Piece(1, 1, 'b_queen_chess.jpg',piece.x,piece.y,'queen','b','m'))
+            if newpiece=='rook':
+                board.addpiece(Piece(1, 1, 'b_rook_chess.jpg',piece.x,piece.y,'rook','b','m'))
+            if newpiece=='knight':
+                board.addpiece(Piece(1, 1, 'b_ma_chess.jpg',piece.x,piece.y,'ma','b','m'))
+            if newpiece=='bighop':
+                board.addpiece(Piece(1, 1,'b_bishop_chess.jpg',piece.x, piece.y,'bishop','b','m'))
 
 
 

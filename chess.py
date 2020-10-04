@@ -475,6 +475,9 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
 
         if piece.pt=='pawn' and piece.y==0: ##white pawn reaches to the promotion position
             newpiece=getInput()
+            if newpiece==None:
+                cv2.destroyAllWindows()
+                quit()
             board.pieces.remove(board.mapping[board.m_available[piece.y, piece.x]])##remove promoted pawn
             if newpiece=='queen':
                 board.addpiece(Piece(1, 1, 'queen_chess.jpg',piece.x,piece.y,'queen','w','m'))
@@ -482,7 +485,7 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
                 board.addpiece(Piece(1, 1, 'rook_chess.jpg',piece.x,piece.y,'rook','w','m'))
             if newpiece=='knight':
                 board.addpiece(Piece(1, 1, 'ma_chess.jpg',piece.x,piece.y,'ma','w','m'))
-            if newpiece=='bighop':
+            if newpiece=='bishop':
                 board.addpiece(Piece(1, 1,'bishop_chess.jpg',piece.x, piece.y,'bishop','w','m'))
         if piece.pt=='b_pawn' and piece.y==7: ##black pawn reaches to the promotion position
             newpiece=getInput()
@@ -493,7 +496,7 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
                 board.addpiece(Piece(1, 1, 'b_rook_chess.jpg',piece.x,piece.y,'rook','b','m'))
             if newpiece=='knight':
                 board.addpiece(Piece(1, 1, 'b_ma_chess.jpg',piece.x,piece.y,'ma','b','m'))
-            if newpiece=='bighop':
+            if newpiece=='bishop':
                 board.addpiece(Piece(1, 1,'b_bishop_chess.jpg',piece.x, piece.y,'bishop','b','m'))
 
 

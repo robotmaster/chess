@@ -8,7 +8,9 @@ def getInput():
         master.destroy()
     master=Tk()
     master.bind("<Escape>", exit)
-    global f
+
+    global f,e
+    f=None
 
     def callback():
         global f,e
@@ -36,8 +38,6 @@ def getInput():
             # size of the window will be very small
             label = Entry(self)
             label.pack(side="top",fill="x")
-
-    global  f,e
     ABC(master)
     e=Entry(master)
     e.pack()

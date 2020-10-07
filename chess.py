@@ -134,13 +134,13 @@ def IsCheck (board,color):
     if color=='b':
         for p in board.pieces:
             if p.color == 'w':
-                if isValid(p,board,b_king.x,b_king.y,False):
+                if isValid(p,board,b_king.x,b_king.y,False,False):
                     return True
 
     if color=='w':
         for p in board.pieces:
             if p.color == 'b':
-                if isValid(p,board,king.x,king.y,False):
+                if isValid(p,board,king.x,king.y,False,False):
                     return True
     return False
 def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):

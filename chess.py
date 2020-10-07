@@ -420,6 +420,7 @@ def Capturing(piece,board,nextpoint_x,nextpoint_y,enpassantmove):
             if board.mapping[board.m_available[piece.y,nextpoint_x]].color!=piece.color:
                 nextpiece=board.m_available[piece.y,nextpoint_x]
                 board.pieces.remove(board.mapping[nextpiece])
+                board.m_available[piece.y,nextpoint_x]=0 ##remove the taken pawn
 
 
 def movepiece(board,piece,nextpoint_x,nextpoint_y,):
@@ -473,6 +474,7 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
                     b_rook2.y=0
                     b_rook2.moved='m'
 
+        ##promotion
         if piece.pt=='pawn' and piece.y==0: ##white pawn reaches to the promotion position
             newpiece=getInput()
             if newpiece==None:

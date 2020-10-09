@@ -344,7 +344,7 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
         return not checkResult
     else:
         return True
-
+def checkmate(board,color):
 
 
 def isValidCastle(board,nextpoint_x,piece):

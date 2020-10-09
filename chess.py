@@ -346,6 +346,7 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
         return True
 
 
+
 def isValidCastle(board,nextpoint_x,piece):
     if piece.pt!='king':
         return False

@@ -1,8 +1,9 @@
 
 import cv2
 import numpy as np
-from inputbox import getInput
+from inputbox import *
 ## does not work on mac os 10 or later without tkinter/tk/tcl 8.6.5
+##change the boardfliiped in castle and pawns to determine if boardflipped, use boardflipped. it will return false when white is at the bottom and returns true when black is at the bottom
 
 class Board:
     def __init__(self,height,width):
@@ -69,7 +70,8 @@ class Piece:
         cv2.imshow('img',self.image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-
+global boardflipped
+boardflipped = False
 
 board=Board(8,8)
 
@@ -130,6 +132,20 @@ pawn=[]
 for i in range(8):
     pawn.append(Piece(1,1,'pawn_chess.jpg',i,6,'pawn','w','u'))
     board.addpiece(pawn[i])
+boardshouldbeflipped=checkflipboard()
+def FlipBoard(board):
+    global boardflipped
+    for p in board.pieces:
+        x=7-p.x
+        y=7-p.y
+        p.x=x
+        p.y=y
+        board.m_available[y,x]=board.m_available[p.y,p.x]
+        board.m_available[p.y,p.x]=0
+    if boardflipped:
+        boardflipped=False
+    else:
+        boardflipped=True
 def IsCheck (board,color):
     if color=='b':
         for p in board.pieces:
@@ -254,39 +270,74 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
         #dont forget to add capturing
 
     if piece.pt=='b_pawn':
-        if piece.x==nextpoint_x:
-            if piece.y-nextpoint_y<0:
-                if board.m_available[nextpoint_y,nextpoint_x]>0:
+        if boardflipped:
+            if piece.x == nextpoint_x:
+                if piece.y - nextpoint_y > 0:
+                    if board.m_available[nextpoint_y, nextpoint_x] > 0:
+                        return False
+                    if piece.y == 6:
+                        if piece.y - nextpoint_y < 3:
+                            for p in range(piece.y, nextpoint_y):
+                                if board.m_available[p, piece.x] > 0:
+                                    return False
+                        else:
+                            return False
+                    else:
+                        if piece.y - nextpoint_y < 2:
+                            for p in range(piece.y, nextpoint_y):
+                                if board.m_available[p, piece.x] > 0:
+                                    return False
+                        else:
+                            return False
+                else:
                     return False
-                if piece.y==1:
-                    if nextpoint_y-piece.y<3:
-                        for p in range(nextpoint_y,piece.y):
-                            if board.m_available[p,piece.x]>0:
-                                return False
-                    else:
-                        return False
-                if piece.y>1:
-                    if nextpoint_y-piece.y<2:
-                        for p in range(nextpoint_y,piece.y):
-                            if board.m_available[p,piece.x]>0:
-                                return False
-                    else:
-                        return False
-            else:
-                return False
+            elif board.m_available[nextpoint_y, nextpoint_x] > 0:
+                if nextpoint_y - piece.y != -1 or abs(nextpoint_x - piece.x) != 1:
+                    return False
 
-        elif board.m_available[nextpoint_y,nextpoint_x]>0:
-            if nextpoint_y-piece.y!=1 or abs(nextpoint_x-piece.x)!=1:
-                return False
-        elif board.m_available[nextpoint_y,nextpoint_x]==0:
-            if board.m_available[piece.y,nextpoint_x]>0:
-                bpiece = board.m_available[piece.y,nextpoint_x]
-                if board.mapping[bpiece].enpassant==False:
+            elif board.m_available[nextpoint_y, nextpoint_x] == 0:
+                if board.m_available[piece.y, nextpoint_x] > 0:
+                    apiece = board.m_available[piece.y, nextpoint_x]
+                    if board.mapping[apiece].enpassant == False:
+                        return False
+                    elif abs(nextpoint_x - piece.x) > 1:
+                        return False
+                else:
                     return False
-                elif abs(nextpoint_x-piece.x)>1:
+        else:
+            if piece.x==nextpoint_x:
+                if piece.y-nextpoint_y<0:
+                    if board.m_available[nextpoint_y,nextpoint_x]>0:
+                        return False
+                    if piece.y==1:
+                        if nextpoint_y-piece.y<3:
+                            for p in range(nextpoint_y,piece.y):
+                                if board.m_available[p,piece.x]>0:
+                                    return False
+                        else:
+                            return False
+                    if piece.y>1:
+                        if nextpoint_y-piece.y<2:
+                            for p in range(nextpoint_y,piece.y):
+                                if board.m_available[p,piece.x]>0:
+                                    return False
+                        else:
+                            return False
+                else:
                     return False
-            else:
-                return False
+
+            elif board.m_available[nextpoint_y,nextpoint_x]>0:
+                if nextpoint_y-piece.y!=1 or abs(nextpoint_x-piece.x)!=1:
+                    return False
+            elif board.m_available[nextpoint_y,nextpoint_x]==0:
+                if board.m_available[piece.y,nextpoint_x]>0:
+                    bpiece = board.m_available[piece.y,nextpoint_x]
+                    if board.mapping[bpiece].enpassant==False:
+                        return False
+                    elif abs(nextpoint_x-piece.x)>1:
+                        return False
+                else:
+                    return False
 
     if piece.pt=='bishop':
         if abs(piece.x-nextpoint_x)-abs(piece.y-nextpoint_y)==0:
@@ -327,7 +378,7 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
         cur_y=piece.y
         capturedPiece = Capturing(piece,board,nextpoint_x,nextpoint_y,enpassant)
         board.m_available[nextpoint_y, nextpoint_x] = board.m_available[piece.y, piece.x]
-        board.m_available[piece.y, piece.x] = 0
+        board.m_available[piece.y, piece.x]=0
         piece.x = nextpoint_x
         piece.y = nextpoint_y
         checkResult= IsCheck(board, piece.color)
@@ -507,7 +558,7 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
         return False
 
 global p_x,p_y
-def onmouse(event,x,y,flags,params,):
+def onmouse(event,x,y,flags,params):
     global isCastleMove
     if event==cv2.EVENT_LBUTTONDOWN:
         global p_x,p_y
@@ -528,7 +579,8 @@ def onmouse(event,x,y,flags,params,):
 
         ##step 3; if not,move if it's a valid move
         if board.currentpiece is not None and movepiece(board,board.currentpiece,p_x,p_y):
-
+            if boardshouldbeflipped=='yes':
+                FlipBoard(board)
             if board.turn=='w':
                 for i in range(8):
                     b_pawn[i].enpassant=False

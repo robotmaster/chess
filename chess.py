@@ -150,13 +150,13 @@ def IsCheck (board,color):
     if color=='b':
         for p in board.pieces:
             if p.color == 'w':
-                if isValid(p,board,b_king.x,b_king.y,False):
+                if isValid(p,board,b_king.x,b_king.y,False,False):
                     return True
 
     if color=='w':
         for p in board.pieces:
             if p.color == 'b':
-                if isValid(p,board,king.x,king.y,False):
+                if isValid(p,board,king.x,king.y,False,False):
                     return True
     return False
 def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
@@ -395,6 +395,7 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
         return not checkResult
     else:
         return True
+def checkmate(board,color):
 
 
 def isValidCastle(board,nextpoint_x,piece):
@@ -471,6 +472,7 @@ def Capturing(piece,board,nextpoint_x,nextpoint_y,enpassantmove):
             if board.mapping[board.m_available[piece.y,nextpoint_x]].color!=piece.color:
                 nextpiece=board.m_available[piece.y,nextpoint_x]
                 board.pieces.remove(board.mapping[nextpiece])
+                board.m_available[piece.y,nextpoint_x]=0 ##remove the taken pawn
 
 
 def movepiece(board,piece,nextpoint_x,nextpoint_y,):
@@ -524,6 +526,7 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
                     b_rook2.y=0
                     b_rook2.moved='m'
 
+        ##promotion
         if piece.pt=='pawn' and piece.y==0: ##white pawn reaches to the promotion position
             newpiece=getInput()
             if newpiece==None:

@@ -1,7 +1,5 @@
 from tkinter import *
-import numpy as np
-import cv2
-import time
+
 
 def getInput():
     def exit(event):

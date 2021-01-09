@@ -4,7 +4,7 @@ import numpy as np
 from inputbox import *
 ## does not work on mac os 10 or later without tkinter/tk/tcl 8.6.5
 ##change the boardfliiped in castle and pawns to determine if boardflipped, use boardflipped. it will return false when white is at the bottom and returns true when black is at the bottom
-
+##problems cant change knight or rook when board is flipped, castle when flipped, and en passant
 class Board:
     def __init__(self,height,width):
         self.height=height
@@ -72,7 +72,6 @@ class Piece:
         cv2.destroyAllWindows()
 global boardflipped
 boardflipped = False
-
 board=Board(8,8)
 
 b_king=Piece(1,1,'b_king_chess.jpg',4,0,'king','b','u')
@@ -132,16 +131,18 @@ pawn=[]
 for i in range(8):
     pawn.append(Piece(1,1,'pawn_chess.jpg',i,6,'pawn','w','u'))
     board.addpiece(pawn[i])
-boardshouldbeflipped=checkflipboard()
+# boardshouldbeflipped=checkflipboard()
+boardshouldbeflipped=input('flipboard?')
 def FlipBoard(board):
     global boardflipped
     for p in board.pieces:
         x=7-p.x
         y=7-p.y
+        savedpiece=board.m_available[p.y,p.x]
+        board.m_available[y,x]=board.m_available[p.y,p.x]
+        board.m_available[p.y,p.x]=savedpiece
         p.x=x
         p.y=y
-        board.m_available[y,x]=board.m_available[p.y,p.x]
-        board.m_available[p.y,p.x]=0
     if boardflipped:
         boardflipped=False
     else:
@@ -234,40 +235,75 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
         else:
             return False
     if piece.pt=='pawn':
-        if piece.x==nextpoint_x:
-            if piece.y-nextpoint_y>0:
-                if board.m_available[nextpoint_y,nextpoint_x]>0:
+        if boardflipped:
+            if piece.x==nextpoint_x:
+                if piece.y-nextpoint_y<0:
+                    if board.m_available[nextpoint_y,nextpoint_x]>0:
+                        return False
+                    if piece.y==1:
+                        if nextpoint_y-piece.y<3:
+                            for p in range(nextpoint_y,piece.y):
+                                if board.m_available[p,piece.x]>0:
+                                    return False
+                        else:
+                            return False
+                    if piece.y>1:
+                        if nextpoint_y-piece.y<2:
+                            for p in range(nextpoint_y,piece.y):
+                                if board.m_available[p,piece.x]>0:
+                                    return False
+                        else:
+                            return False
+                else:
                     return False
-                if piece.y==6:
-                    if piece.y-nextpoint_y<3:
-                        for p in range(piece.y,nextpoint_y):
-                            if board.m_available[p,piece.x]>0:
-                                return False
-                    else:
+
+            elif board.m_available[nextpoint_y,nextpoint_x]>0:
+                if nextpoint_y-piece.y!=1 or abs(nextpoint_x-piece.x)!=1:
+                    return False
+            elif board.m_available[nextpoint_y,nextpoint_x]==0:
+                if board.m_available[piece.y,nextpoint_x]>0:
+                    bpiece = board.m_available[piece.y,nextpoint_x]
+                    if board.mapping[bpiece].enpassant==False:
+                        return False
+                    elif abs(nextpoint_x-piece.x)>1:
                         return False
                 else:
-                    if piece.y-nextpoint_y<2:
-                        for p in range(piece.y,nextpoint_y):
-                            if board.m_available[p,piece.x]>0:
-                                return False
-                    else:
+                    return False
+        else:
+            if piece.x==nextpoint_x:
+                if piece.y-nextpoint_y>0:
+                    if board.m_available[nextpoint_y,nextpoint_x]>0:
                         return False
-            else:
-                return False
-        elif board.m_available[nextpoint_y,nextpoint_x]>0:
-            if nextpoint_y-piece.y!=-1 or abs(nextpoint_x-piece.x)!=1:
-                return False
+                    if piece.y==6:
+                        if piece.y-nextpoint_y<3:
+                            for p in range(piece.y,nextpoint_y):
+                                if board.m_available[p,piece.x]>0:
+                                    return False
+                        else:
+                            return False
+                    else:
+                        if piece.y-nextpoint_y<2:
+                            for p in range(piece.y,nextpoint_y):
+                                if board.m_available[p,piece.x]>0:
+                                    return False
+                        else:
+                            return False
+                else:
+                    return False
+            elif board.m_available[nextpoint_y,nextpoint_x]>0:
+                if nextpoint_y-piece.y!=-1 or abs(nextpoint_x-piece.x)!=1:
+                    return False
 
-        elif board.m_available[nextpoint_y,nextpoint_x]==0:
-            if board.m_available[piece.y,nextpoint_x]>0:
-                apiece = board.m_available[piece.y,nextpoint_x]
-                if board.mapping[apiece].enpassant==False:
+            elif board.m_available[nextpoint_y,nextpoint_x]==0:
+                if board.m_available[piece.y,nextpoint_x]>0:
+                    apiece = board.m_available[piece.y,nextpoint_x]
+                    if board.mapping[apiece].enpassant==False:
+                        return False
+                    elif abs(nextpoint_x-piece.x)>1:
+                        return False
+                else:
                     return False
-                elif abs(nextpoint_x-piece.x)>1:
-                    return False
-            else:
-                return False
-        #dont forget to add capturing
+            #dont forget to add capturing
 
     if piece.pt=='b_pawn':
         if boardflipped:
@@ -393,9 +429,6 @@ def isValid(piece,board,nextpoint_x,nextpoint_y,enpassant=False,needcheck=True):
         piece.x=cur_x
         piece.y=cur_y
         return not checkResult
-    else:
-        return True
-def checkmate(board,color):
 
 
 def isValidCastle(board,nextpoint_x,piece):
@@ -404,54 +437,105 @@ def isValidCastle(board,nextpoint_x,piece):
     if piece.moved=='m':
         return False
     if board.turn=='w':
-        if nextpoint_x==2:
-            #check if rook has already moved
-            if rook1.moved=='m':
-                return False
-            #check if there's any piece between the king and the rook
-            for p in range(2,4):
-                if board.m_available[7,p]>0:
+        if boardflipped:
+            if nextpoint_x==5:
+                if rook1.moved=='m':
                     return False
-            #check if there's a check on any position between king and it's castled postion
-            for x_position in range(2,5):
-                for p in board.pieces:
-                    if p.color=='b':
-                        if isValid(p,board,x_position,7):
-                            return False
-        if nextpoint_x==6:
-            if rook2.moved=='m':
-                return False
-            for p in range(5,7):
-                if board.m_available[7,p]>0:
+                for p in range(4,7):
+                    if board.m_available[7,p]>0:
+                        return False
+                for x_position in (3,6):
+                    for p in board.pieces:
+                        if p.color=='w':
+                            if isValid(p,board,x_position,7):
+                                return False
+            if nextpoint_x==1:
+                if rook2.moved=='m':
                     return False
-            for x_position in range(4,7):
-                for p in board.pieces:
-                    if p.color=='b':
-                        if isValid(p,board,x_position,7):
-                            return False
+                for p in range(1,3):
+                    if board.m_available[7,p]>0:
+                        return False
+                for x_position in (1,4):
+                    for p in board.pieces:
+                        if p.color=='w':
+                            if isValid(p,board,x_position,7):
+                                return False
+        else:
+            if nextpoint_x==2:
+                #check if rook has already moved
+                if rook1.moved=='m':
+                    return False
+                #check if there's any piece between the king and the rook
+                for p in range(1,4):
+                    if board.m_available[7,p]>0:
+                        return False
+                #check if there's a check on any position between king and it's castled postion
+                for x_position in range(2,5):
+                    for p in board.pieces:
+                        if p.color=='b':
+                            if isValid(p,board,x_position,7):
+                                return False
+            if nextpoint_x==6:
+                if rook2.moved=='m':
+                    return False
+                for p in range(5,7):
+                    if board.m_available[7,p]>0:
+                        return False
+                for x_position in range(4,7):
+                    for p in board.pieces:
+                        if p.color=='b':
+                            if isValid(p,board,x_position,7):
+                                return False
     if board.turn=='b':
-        if nextpoint_x==2:
-            if b_rook1.moved=='m':
-                return False
-            for p in range(2,4):
-                if board.m_available[0,p]>0:
+        if boardflipped:
+            if nextpoint_x==5:
+                # check if rook has already moved
+                if b_rook1.moved=='m':
                     return False
-            for x_position in (2,4):
-                for p in board.pieces:
-                    if p.color=='w':
-                        if isValid(p,board,x_position,0):
-                            return False
-        if nextpoint_x==6:
-            if b_rook2.moved=='m':
-                return False
-            for p in range(5,6):
-                if board.m_available[0,p]>0:
+                # check if there's any piece between the king and the rook
+                for p in range(4,7):
+                    if board.m_available[0,p]>0:
+                        return False
+                # check if there's a check on any position between king and it's castled postion
+                for x_position in range(3,6):
+                    for p in board.pieces:
+                        if p.color=='b':
+                            if isValid(p, board, x_position,0):
+                                return False
+            if nextpoint_x==1:
+                if rook2.moved == 'm':
                     return False
-            for x_position in (4,6):
-                for p in board.pieces:
-                    if p.color=='w':
-                        if isValid(p,board,x_position,0):
-                            return False
+                for p in range(1,3):
+                    if board.m_available[0,p] > 0:
+                        return False
+                for x_position in range(1,4):
+                    for p in board.pieces:
+                        if p.color=='b':
+                            if isValid(p, board, x_position,0):
+                                return False
+        else:
+            if nextpoint_x==2:
+                if b_rook1.moved=='m':
+                    return False
+                for p in range(1,4):
+                    if board.m_available[0,p]>0:
+                        return False
+                for x_position in (2,5):
+                    for p in board.pieces:
+                        if p.color=='w':
+                            if isValid(p,board,x_position,0):
+                                return False
+            if nextpoint_x==6:
+                if b_rook2.moved=='m':
+                    return False
+                for p in range(5,7):
+                    if board.m_available[0,p]>0:
+                        return False
+                for x_position in (4,7):
+                    for p in board.pieces:
+                        if p.color=='w':
+                            if isValid(p,board,x_position,0):
+                                return False
     if abs(nextpoint_x-piece.x)==2:
         return True
     else:
@@ -552,9 +636,6 @@ def movepiece(board,piece,nextpoint_x,nextpoint_y,):
                 board.addpiece(Piece(1, 1, 'b_ma_chess.jpg',piece.x,piece.y,'ma','b','m'))
             if newpiece=='bishop':
                 board.addpiece(Piece(1, 1,'b_bishop_chess.jpg',piece.x, piece.y,'bishop','b','m'))
-
-
-
         return True
 
     else:
@@ -573,7 +654,9 @@ def onmouse(event,x,y,flags,params):
         ##current turn: board.turn
 
         ##step 1: choose a piece ,the color has to match the turn color
-
+            if boardflipped:
+                if p_y<3:
+                    return
             if piece.color==board.turn:
                 board.currentpiece=piece
 
@@ -601,7 +684,7 @@ cv2.namedWindow('chess')
 cv2.setMouseCallback('chess',onmouse)
 while(1):
     board.draw('chess')
-    k=cv2.waitKey(0)& 0xFF
+    k=cv2.waitKey(0) & 0xFF
     if k==27:         # esc to exit
         print ('Done')
         cv2.destroyAllWindows()
